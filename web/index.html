@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    table {
+        width: 100%;
+        font-size: 16px;
+        padding: 12px 20px 12px 40px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        border: 1px solid #ddd;
+        font-size: 18px;
+    }
+
+    table th,
+    table td {
+        text-align: left;
+        padding: 12px;
+    }
+
+    #myTable tr {
+        border-bottom: 1px solid #ddd;
+    }
+
+    table tr.header,
+    table tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+
+
+<h1>VAERS Dashboard</h1>
+
+<input type="text" id="search" onkeyup="search()" placeholder="Search">
+<table id="dataTable"></table>
+
+
+<script>
+    main();
+
+    async function main() {
+        let data = await fetchData();
+        buildDataTable(data);
+    }
+
+    async function fetchData() {
+        const response = await fetch("http://localhost:8000", { method: "GET" });
+        return response.json(); // parses JSON response into native JavaScript objects
+    }
+
+    function buildDataTable(data) {
+        let table = document.createElement("table");
+        table.id = "dataTable";
+
+        // Add the table headers
+        let tr = document.createElement("tr");
+        tr.className = "header";
+        for (let key of Object.keys(data[0])) {
+            let th = document.createElement("th");
+            th.innerHTML = key;
+            tr.appendChild(th);
+        }
+        table.appendChild(tr);
+
+        // Add the table rows
+        for (const i in data) {
+            let tr = document.createElement("tr");
+
+            for (const val of Object.values(data[i])) {
+                let td = document.createElement("td");
+                td.innerHTML = val;
+                tr.appendChild(td);
+            }
+
+            table.appendChild(tr);
+        }
+
+        document.getElementById("dataTable").replaceWith(table);
+    }
+
+    function search() {
+        let input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("dataTable");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("dataTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td");
+
+            for (j = 0; j < td.length; j++) {
+
+                if (td[j]) {
+                    txtValue = td[j].textContent || td[j].innerText;
+
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        break;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    }
+</script>
