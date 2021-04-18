@@ -2,27 +2,24 @@ import socket
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from data import parseAll
+from data import DataLoader
 
 
 host = "0"
 port = 8000
-global results
 
 
 class Server(BaseHTTPRequestHandler):
     def do_GET(self):
-        global results
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(results.encode("utf_8"))
+        self.wfile.write(DataLoader.data.encode("utf_8"))
 
 
 def main():
-    global results
-    results = parseAll()
+    DataLoader.load()
     server = HTTPServer((host, port), Server)
 
     try:

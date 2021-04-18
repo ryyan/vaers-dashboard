@@ -1,6 +1,7 @@
 import csv
 import os
 import json
+from copy import copy
 
 
 class VaersData:
@@ -9,44 +10,26 @@ class VaersData:
         self.recv_date = row["RECVDATE"]
         self.state = row["STATE"]
         self.age_years = row["AGE_YRS"]
-        # self.cage_year = row["CAGE_YR"]
-        # self.cage_month = row["CAGE_MO"]
         self.sex = row["SEX"]
-        # self.report_date = row["RPT_DATE"]
         self.died = row["DIED"]
         self.date_died = row["DATEDIED"]
-        # self.l_threat = row["L_THREAT"]
-        # self.er_visit = row["ER_VISIT"]
-        # self.hospital = row["HOSPITAL"]
-        # self.hospital_days = row["HOSPDAYS"]
-        # self.x_stay = row["X_STAY"]
-        # self.disable = row["DISABLE"]
-        self.recovered = row["RECOVD"]
+        #self.recovered = row["RECOVD"]
         self.vax_date = row["VAX_DATE"]
         self.onset_date = row["ONSET_DATE"]
-        # self.num_days = row["NUMDAYS"]
-        self.symptom_text = row["SYMPTOM_TEXT"]
-        self.lab_data = row["LAB_DATA"]
-        # self.v_admin_by = row["V_ADMINBY"]
-        # self.v_fund_by = row["V_FUNDBY"]
+        #self.symptom_text = row["SYMPTOM_TEXT"]
+        #self.lab_data = row["LAB_DATA"]
         self.other_meds = row["OTHER_MEDS"]
-        self.current_ill = row["CUR_ILL"]
-        self.history = row["HISTORY"]
-        self.prior_vax = row["PRIOR_VAX"]
-        # self.splt_type = row["SPLTTYPE"]
-        # self.form_version = row["FORM_VERS"]
-        # self.todays_date = row["TODAYS_DATE"]
-        self.birth_defect = row["BIRTH_DEFECT"]
-        # self.office_visit = row["OFC_VISIT"]
-        # self.er_ed_visit = row["ER_ED_VISIT"]
-        self.allergies = row["ALLERGIES"]
-        self.vaxes = []
-        self.symptoms = []
+        #self.current_ill = row["CUR_ILL"]
+        #self.history = row["HISTORY"]
+        #self.prior_vax = row["PRIOR_VAX"]
+        #self.birth_defect = row["BIRTH_DEFECT"]
+        #self.allergies = row["ALLERGIES"]
 
-    def append_vax_data(self, vax_data):
-        result = vax_data.__dict__
-        del result["vaers_id"]
-        self.vaxes.append(result)
+        self.vax_type = None
+        self.vax_manufacturer = None
+        self.vax_dose_series = None
+
+        self.symptoms = []
 
     def append_symptom_data(self, symptom_data):
         for s in symptom_data.symptoms:
@@ -59,10 +42,6 @@ class VaxData:
         self.vax_type = row["VAX_TYPE"]
         self.vax_manufacturer = row["VAX_MANU"]
         self.vax_dose_series = row["VAX_DOSE_SERIES"]
-        # self.vax_lot = row["VAX_LOT"]
-        # self.vax_route = row["VAX_ROUTE"]
-        # self.vax_site = row["VAX_SITE"]
-        # self.vax_name = row["VAX_NAME"]
 
 
 class SymptomData:
@@ -82,17 +61,17 @@ class SymptomData:
             self.symptoms.append(row["SYMPTOM5"])
 
 
-class CombinedData:
-    def __init__(self, vaers_id, vax_data, vaers_data, symptom_data):
-        self.vaers_id = vaers_id
-        self.vaers_data = vaers_data
-        self.vax_data = vax_data
-        self.symptom_data = symptom_data
+class DataLoader:
+    data = None
+
+    @staticmethod
+    def load():
+        vaers_data = parse_data_files()
+        DataLoader.data = vaers_data
 
 
-def parseAll():
+def parse_data_files():
     print("Parsing data files")
-
     data_folder = "data"
 
     for entry in os.scandir(data_folder):
@@ -100,27 +79,30 @@ def parseAll():
             continue
 
         if entry.name.endswith("DATA.csv"):
-            vaers_data = parse(entry.path, VaersData)
-            vaers_map = to_map(vaers_data)
+            vaers_data = parse_data_file(entry.path, VaersData)
 
         if entry.name.endswith("VAX.csv"):
-            vax_data = parse(entry.path, VaxData)
+            vax_data = parse_data_file(entry.path, VaxData)
 
         if entry.name.endswith("SYMPTOMS.csv"):
-            symptom_data = parse(entry.path, SymptomData)
+            symptom_data = parse_data_file(entry.path, SymptomData)
 
-    combine_vax(vaers_map, vax_data)
+    print("Combining data")
+    # Convert vaers data to map to make it easier to combine all data models
+    vaers_map = map_vaers_data(vaers_data)
     combine_symptom(vaers_map, symptom_data)
+    # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
+    vaers_complete = combine_vax(vaers_map, vax_data)
 
     print("Converting results to json")
     results = []
-    for val in vaers_map.values():
+    for val in vaers_complete:
         results.append(val.__dict__)
 
     return json.dumps(results)
 
 
-def parse(file_path, data_class):
+def parse_data_file(file_path, data_class):
     print(f"Parsing {file_path}")
     results = []
 
@@ -133,7 +115,7 @@ def parse(file_path, data_class):
     return results
 
 
-def to_map(data):
+def map_vaers_data(data):
     results = {}
     for d in data:
         results[d.vaers_id] = d
@@ -143,10 +125,16 @@ def to_map(data):
 
 def combine_vax(vaers_map, data):
     print("Combining vax data")
+    results = []
+
     for d in data:
-        result = vaers_map[d.vaers_id]
-        result.append_vax_data(d)
-        vaers_map[result.vaers_id] = result
+        result = copy(vaers_map[d.vaers_id])
+        result.vax_type = d.vax_type
+        result.vax_manufacturer = d.vax_manufacturer
+        result.vax_dose_series = d.vax_dose_series
+        results.append(result)
+    
+    return results
 
 
 def combine_symptom(vaers_map, data):
