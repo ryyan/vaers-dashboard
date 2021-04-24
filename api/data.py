@@ -64,20 +64,20 @@ class SymptomData:
 
 
 class DataLoader:
-    data = None
 
     @staticmethod
     def load():
         vaers_data = parse_data_files()
         totals = calculate_totals(vaers_data)
-        DataLoader.data = json.dumps(
-            {
-                "totals": totals,
-            }
-        )
+        deaths = calculate_deaths(vaers_data)
+        return {
+            "totals": totals,
+            "deaths": deaths,
+        }
 
 
 def calculate_totals(vaers_data):
+    print("Calculating totals")
     results = collections.defaultdict(int)
     results["vax_type"] = collections.defaultdict(int)
     results["vax_string"] = collections.defaultdict(int)
@@ -86,6 +86,21 @@ def calculate_totals(vaers_data):
         results["total"] += 1
         results["vax_type"][d.vax_type] += 1
         results["vax_string"][d.vax_string] += 1
+
+    return results
+
+
+def calculate_deaths(vaers_data):
+    print("Calculating deaths")
+    results = collections.defaultdict(int)
+    results["vax_type"] = collections.defaultdict(int)
+    results["vax_string"] = collections.defaultdict(int)
+
+    for d in vaers_data:
+        if d.died == "Y":
+            results["total"] += 1
+            results["vax_type"][d.vax_type] += 1
+            results["vax_string"][d.vax_string] += 1
 
     return results
 
@@ -145,7 +160,7 @@ def combine_vax(vaers_map, data):
         result.vax_type = d.vax_type
         result.vax_manufacturer = d.vax_manufacturer
         result.vax_dose_series = d.vax_dose_series
-        result.vax_string = f"{d.vax_type};{d.vax_manufacturer};{d.vax_dose_series}"
+        result.vax_string = f"{d.vax_type};{d.vax_manufacturer}"
         results.append(result)
 
     return results

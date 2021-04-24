@@ -1,3 +1,4 @@
+import json
 import socket
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -19,7 +20,10 @@ class Server(BaseHTTPRequestHandler):
 
 
 def main():
-    DataLoader.load()
+    with open("results.json", "w") as outfile:
+        outfile.write(json.dumps(DataLoader.load(), indent=2))
+
+    return
     server = HTTPServer((host, port), Server)
 
     try:
