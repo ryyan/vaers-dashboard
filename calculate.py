@@ -11,7 +11,7 @@ def calculate_data(vaers_data_by_year):
             # "symptoms": calculate_symptoms(vaers_data),
             # "symptoms_lived": calculate_symptoms_lived(vaers_data),
             # "symptoms_died": calculate_symptoms_died(vaers_data),
-            "symptom_totals": calculate_symptom_totals(vaers_data),
+            "symptoms": calculate_symptom_totals(vaers_data),
         }
 
     return results, json.dumps(results, indent=2)
@@ -120,6 +120,7 @@ def calculate_symptom_totals(vaers_data):
 
     for d in vaers_data:
         for _ in d.symptoms:
+            results["total"] += 1
             results["vax_type"][d.vax_type] += 1
 
             if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
