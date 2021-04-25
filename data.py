@@ -82,9 +82,7 @@ def load():
 
 def calculate_totals(vaers_data):
     print("Calculating totals")
-    results = collections.defaultdict(int)
-    results["vax_type"] = collections.defaultdict(int)
-    results["vax_string"] = collections.defaultdict(int)
+    results = new_results()
 
     for d in vaers_data:
         results["total"] += 1
@@ -96,9 +94,7 @@ def calculate_totals(vaers_data):
 
 def calculate_deaths(vaers_data):
     print("Calculating deaths")
-    results = collections.defaultdict(int)
-    results["vax_type"] = collections.defaultdict(int)
-    results["vax_string"] = collections.defaultdict(int)
+    results = new_results()
 
     for d in vaers_data:
         if not d.died == "Y":
@@ -113,9 +109,7 @@ def calculate_deaths(vaers_data):
 
 def calculate_symptoms(vaers_data):
     print("Calculating symptoms")
-    results = {}
-    results["vax_type"] = {}
-    results["vax_string"] = {}
+    results = new_results()
 
     for d in vaers_data:
         if d.vax_type not in results["vax_type"]:
@@ -133,9 +127,7 @@ def calculate_symptoms(vaers_data):
 
 def calculate_symptoms_lived(vaers_data):
     print("Calculating symptoms of deaths")
-    results = {}
-    results["vax_type"] = {}
-    results["vax_string"] = {}
+    results = new_results()
 
     for d in vaers_data:
         if d.died == "Y":
@@ -156,9 +148,7 @@ def calculate_symptoms_lived(vaers_data):
 
 def calculate_symptoms_died(vaers_data):
     print("Calculating symptoms of deaths")
-    results = {}
-    results["vax_type"] = {}
-    results["vax_string"] = {}
+    results = new_results()
 
     for d in vaers_data:
         if not d.died == "Y":
@@ -174,6 +164,13 @@ def calculate_symptoms_died(vaers_data):
             results["vax_type"][d.vax_type][s] += 1
             results["vax_string"][d.vax_string][s] += 1
 
+    return results
+
+
+def new_results():
+    results = collections.defaultdict(int)
+    results["vax_type"] = collections.defaultdict(int)
+    results["vax_string"] = collections.defaultdict(int)
     return results
 
 
