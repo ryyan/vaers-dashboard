@@ -17,7 +17,7 @@ def output_results(results_by_year):
         yearly_deaths[year] = results["deaths"]["total"]
         yearly_symptoms[year] = results["symptoms"]["total"]
 
-    with open(f"results/all.md", "w") as outfile:
+    with open(f"results/ALL.md", "w") as outfile:
         outfile.write(write_all(yearly_totals, yearly_deaths, yearly_symptoms))
 
 
@@ -41,12 +41,16 @@ def write_table(data, header, value_column):
 
 
 def write_all(yearly_totals, yearly_deaths, yearly_symptoms):
-    result = f"Totals for All Years\n"
+    result = f"Totals By Year\n"
 
-    result += f"Year | Vaccinations | Deaths | Symptoms\n"
+    result += f"Year | Total | Deaths | Deaths % | Symptoms | Symptoms %\n"
     result += "--- | --- | --- | ---\n"
-    for year, val in yearly_totals.items():
-        result += f"{year} | {val} | {yearly_deaths[year]} | {yearly_symptoms[year]}\n"
+    for year, total in yearly_totals.items():
+        deaths = yearly_deaths[year]
+        symptoms = yearly_symptoms[year]
+        deaths_ratio = "{:.2%}".format(deaths / total)
+        symptoms_ratio = "{:.0%}".format(symptoms / total)
+        result += f"{year} | {total} | {deaths} | {deaths_ratio} | {symptoms} | {symptoms_ratio}\n"
 
     return result
 
