@@ -29,3 +29,5 @@ Dashboard for VAERS data
 ```sh
 python app.py
 ```
+
+3. View [results](results/ALL.md)
