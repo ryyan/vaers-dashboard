@@ -94,7 +94,7 @@ def parse_data_file(file_path, data_class):
     print(f"Parsing {file_path}")
     results = []
 
-    with open(file_path, encoding="raw_unicode_escape") as csv_file:
+    with open(file_path, encoding="windows-1252") as csv_file:
         reader = csv.DictReader(csv_file, delimiter=",")
         for row in reader:
             results.append(data_class(row))
