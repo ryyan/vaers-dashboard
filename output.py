@@ -1,12 +1,37 @@
-def output_results(results_by_year):
+import json
+
+
+def output_results(vaers_data_by_year, query_data_by_year):
+    output_vaers_data(vaers_data_by_year)
+    output_query_data(query_data_by_year)
+    output_data_tables(query_data_by_year)
+
+
+def output_vaers_data(vaers_data_by_year):
+    for year, val in vaers_data_by_year.items():
+        print(f"Writing VAERS data for year {year}")
+        flattened_vals = [x.__dict__ for x in val]
+
+        with open(f"results/{year}-VAERS.json", "w") as outfile:
+            outfile.write(json.dumps({year: flattened_vals}, indent=2))
+
+
+def output_query_data(query_data_by_year):
+    for year, val in query_data_by_year.items():
+        print(f"Writing Query data for year {year}")
+        with open(f"results/{year}-Query.json", "w") as outfile:
+            outfile.write(json.dumps({year: val}, indent=2))
+
+
+def output_data_tables(query_data_by_year):
     yearly_totals = {}
     yearly_deaths = {}
     yearly_symptoms = {}
 
-    for year, results in results_by_year.items():
+    for year, results in query_data_by_year.items():
         print(f"Writing results for year {year}")
         output = ""
-        output += write_table(results["totals"], "Total Vaccinations", "Total")
+        output += write_table(results["totals"], "Total Vaccinations", "Vaccinations")
         output += write_table(results["deaths"], "Total Deaths", "Deaths")
         output += write_table(results["symptoms"], "Total Symptoms", "Symptoms")
 

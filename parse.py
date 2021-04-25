@@ -1,5 +1,4 @@
 import csv
-import json
 import os
 from copy import copy
 
@@ -87,7 +86,7 @@ def parse_data_files():
         # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
         results[year] = combine_vax(vaers_map, val["vax_data"])
 
-    return (results, vaers_data_to_json(results))
+    return results
 
 
 def parse_data_file(file_path, data_class):
@@ -132,17 +131,3 @@ def combine_symptom(vaers_map, data):
         result = vaers_map[d.vaers_id]
         result.append_symptom_data(d)
         vaers_map[result.vaers_id] = result
-
-
-def vaers_data_to_json(vaers_data_by_year):
-    results = {}
-
-    for year, val in vaers_data_by_year.items():
-        new_val = []
-
-        for x in val:
-            new_val.append(x.__dict__)
-
-        results[year] = new_val
-
-    return json.dumps(results, indent=2)

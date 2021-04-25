@@ -4,15 +4,9 @@ from output import output_results
 
 
 def main():
-    vaers_data_by_year, vaers_data_json = parse_data_files()
-    with open("results/vaers_data.json", "w") as outfile:
-        outfile.write(vaers_data_json)
-
-    results, results_json = calculate_data(vaers_data_by_year)
-    with open("results/results.json", "w") as outfile:
-        outfile.write(results_json)
-
-    output_results(results)
+    vaers_data_by_year = parse_data_files()
+    query_data_by_year = calculate_data(vaers_data_by_year)
+    output_results(vaers_data_by_year, query_data_by_year)
 
 
 if __name__ == "__main__":
