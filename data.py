@@ -126,7 +126,7 @@ def calculate_symptoms(vaers_data):
 
 
 def calculate_symptoms_lived(vaers_data):
-    print("Calculating symptoms of deaths")
+    print("Calculating symptoms lived")
     results = new_results()
 
     for d in vaers_data:
@@ -147,7 +147,7 @@ def calculate_symptoms_lived(vaers_data):
 
 
 def calculate_symptoms_died(vaers_data):
-    print("Calculating symptoms of deaths")
+    print("Calculating symptoms died")
     results = new_results()
 
     for d in vaers_data:
