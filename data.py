@@ -119,6 +119,17 @@ def calculate_deaths(vaers_data):
 
 def calculate_death_rate(totals, deaths):
     print("Calculating death rate")
+    results = new_results()
+
+    for key, val in deaths["vax_type"].items():
+        rate = val / totals["vax_type"][key]
+        results["vax_type"][key] = "{:.2%}".format(rate)
+
+    for key, val in deaths["vax_id"].items():
+        rate = val / totals["vax_id"][key]
+        results["vax_id"][key] = "{:.2%}".format(rate)
+
+    return results
 
 
 def calculate_symptoms(vaers_data):
