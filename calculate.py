@@ -8,6 +8,7 @@ def calculate_data(vaers_data_by_year):
             "totals": calculate_totals(vaers_data),
             "deaths": calculate_deaths(vaers_data),
             "symptoms": calculate_symptom_totals(vaers_data),
+            "symptoms_details": calculate_symptoms(vaers_data),
         }
 
     return results
@@ -57,6 +58,26 @@ def calculate_symptom_totals(vaers_data):
                 results["vax_id"][d.vax_id] += 1
 
     return sort_results(results)
+
+
+def calculate_symptoms(vaers_data):
+    print("Calculating symptoms")
+    results = new_results()
+
+    for d in vaers_data:
+        if d.vax_type not in results["vax_type"]:
+            results["vax_type"][d.vax_type] = collections.defaultdict(int)
+
+        if d.vax_id not in results["vax_id"]:
+            results["vax_id"][d.vax_id] = collections.defaultdict(int)
+
+        for s in d.symptoms:
+            results["vax_type"][d.vax_type][s] += 1
+
+            if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+                results["vax_id"][d.vax_id][s] += 1
+
+    return sort_results_symptoms(results)
 
 
 def new_results():
