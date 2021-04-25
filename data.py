@@ -63,10 +63,102 @@ class SymptomData:
             self.symptoms.append(row["SYMPTOM5"])
 
 
-def load():
-    vaers_data_by_year = parse_data_files()
+def parse_data_files():
+    print("Parsing data files")
+    data_folder = "data"
+    parsed_data = {}
+
+    for entry in os.scandir(data_folder):
+        if not entry.is_file() or not entry.name.endswith(".csv"):
+            continue
+
+        # Ex: 2020VAERSDATA.csv
+        year = int(entry.name[:4])
+
+        if year not in parsed_data:
+            parsed_data[year] = {}
+
+        if entry.name.endswith("DATA.csv"):
+            parsed_data[year]["vaers_data"] = parse_data_file(entry.path, VaersData)
+
+        if entry.name.endswith("VAX.csv"):
+            parsed_data[year]["vax_data"] = parse_data_file(entry.path, VaxData)
+
+        if entry.name.endswith("SYMPTOMS.csv"):
+            parsed_data[year]["symptom_data"] = parse_data_file(entry.path, SymptomData)
+
+    print("Combining data")
+    results = {}
+    for year, val in parsed_data.items():
+        # Convert vaers data to map to make it easier to combine all data models
+        vaers_map = map_vaers_data(val["vaers_data"])
+        combine_symptom(vaers_map, val["symptom_data"])
+        # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
+        results[year] = combine_vax(vaers_map, val["vax_data"])
+
+    return (results, vaers_data_to_json(results))
+
+
+def parse_data_file(file_path, data_class):
+    print(f"Parsing {file_path}")
+    results = []
+
+    with open(file_path, encoding="raw_unicode_escape") as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=",")
+        for row in reader:
+            results.append(data_class(row))
+
+    print(f"Parsed {len(results)}")
+    return results
+
+
+def map_vaers_data(data):
+    results = {}
+    for d in data:
+        results[d.vaers_id] = d
+
+    return results
+
+
+def combine_vax(vaers_map, data):
+    print("Combining vax data")
+    results = []
+
+    for d in data:
+        result = copy(vaers_map[d.vaers_id])
+        result.vax_type = d.vax_type
+        result.vax_manufacturer = d.vax_manufacturer
+        result.vax_dose_series = d.vax_dose_series
+        result.vax_id = f"{d.vax_type}-{d.vax_manufacturer}"
+        results.append(result)
+
+    return results
+
+
+def combine_symptom(vaers_map, data):
+    print("Combining symptom data")
+    for d in data:
+        result = vaers_map[d.vaers_id]
+        result.append_symptom_data(d)
+        vaers_map[result.vaers_id] = result
+
+
+def vaers_data_to_json(vaers_data_by_year):
     results = {}
 
+    for year, val in vaers_data_by_year.items():
+        new_val = []
+
+        for x in val:
+            new_val.append(x.__dict__)
+
+        results[year] = new_val
+
+    return json.dumps(results, indent=2)
+
+
+def calculate_data(vaers_data_by_year):
+    results = {}
     for year, vaers_data in vaers_data_by_year.items():
         results[year] = {
             "totals": calculate_totals(vaers_data),
@@ -216,83 +308,3 @@ def sort_results_symptoms(results):
 
 def sort_by_val(x):
     return dict(sorted(x.items(), key=lambda item: item[1], reverse=True))
-
-
-def parse_data_files():
-    print("Parsing data files")
-    data_folder = "data"
-    parsed_data = {}
-
-    for entry in os.scandir(data_folder):
-        if not entry.is_file() or not entry.name.endswith(".csv"):
-            continue
-
-        # Ex: 2020VAERSDATA.csv
-        year = int(entry.name[:4])
-
-        if year not in parsed_data:
-            parsed_data[year] = {}
-
-        if entry.name.endswith("DATA.csv"):
-            parsed_data[year]["vaers_data"] = parse_data_file(entry.path, VaersData)
-
-        if entry.name.endswith("VAX.csv"):
-            parsed_data[year]["vax_data"] = parse_data_file(entry.path, VaxData)
-
-        if entry.name.endswith("SYMPTOMS.csv"):
-            parsed_data[year]["symptom_data"] = parse_data_file(entry.path, SymptomData)
-
-    print("Combining data")
-    results = {}
-    for year, val in parsed_data.items():
-        # Convert vaers data to map to make it easier to combine all data models
-        vaers_map = map_vaers_data(val["vaers_data"])
-        combine_symptom(vaers_map, val["symptom_data"])
-        # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
-        results[year] = combine_vax(vaers_map, val["vax_data"])
-
-    return results
-
-
-def parse_data_file(file_path, data_class):
-    print(f"Parsing {file_path}")
-    results = []
-
-    with open(file_path, encoding="raw_unicode_escape") as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=",")
-        for row in reader:
-            results.append(data_class(row))
-
-    print(f"Parsed {len(results)}")
-    return results
-
-
-def map_vaers_data(data):
-    results = {}
-    for d in data:
-        results[d.vaers_id] = d
-
-    return results
-
-
-def combine_vax(vaers_map, data):
-    print("Combining vax data")
-    results = []
-
-    for d in data:
-        result = copy(vaers_map[d.vaers_id])
-        result.vax_type = d.vax_type
-        result.vax_manufacturer = d.vax_manufacturer
-        result.vax_dose_series = d.vax_dose_series
-        result.vax_id = f"{d.vax_type}-{d.vax_manufacturer}"
-        results.append(result)
-
-    return results
-
-
-def combine_symptom(vaers_map, data):
-    print("Combining symptom data")
-    for d in data:
-        result = vaers_map[d.vaers_id]
-        result.append_symptom_data(d)
-        vaers_map[result.vaers_id] = result
