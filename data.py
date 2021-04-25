@@ -73,12 +73,14 @@ def load():
         # symptoms = calculate_symptoms(vaers_data)
         # symptoms_lived = calculate_symptoms_lived(vaers_data)
         # symptoms_died = calculate_symptoms_died(vaers_data)
+        symptom_totals = calculate_symptom_totals(vaers_data)
         results[year] = {
             "totals": totals,
             "deaths": deaths,
             # "symptoms": symptoms,
             # "symptoms_lived": symptoms_lived,
             # "symptoms_died": symptoms_died,
+            "symptom_totals": symptom_totals,
         }
 
     return results
@@ -179,6 +181,20 @@ def calculate_symptoms_died(vaers_data):
                 results["vax_id"][d.vax_id][s] += 1
 
     return sort_results_symptoms(results)
+
+
+def calculate_symptom_totals(vaers_data):
+    print("Calculating symptom totals")
+    results = new_results()
+
+    for d in vaers_data:
+        for _ in d.symptoms:
+            results["vax_type"][d.vax_type] += 1
+
+            if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+                results["vax_id"][d.vax_id] += 1
+
+    return sort_results(results)
 
 
 def new_results():
