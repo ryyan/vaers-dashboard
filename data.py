@@ -70,15 +70,17 @@ def load():
     for year, vaers_data in vaers_data_by_year.items():
         totals = calculate_totals(vaers_data)
         deaths = calculate_deaths(vaers_data)
-        symptoms = calculate_symptoms(vaers_data)
-        symptoms_lived = calculate_symptoms_lived(vaers_data)
-        symptoms_died = calculate_symptoms_died(vaers_data)
+        death_rate = calculate_death_rate(totals, deaths)
+        # symptoms = calculate_symptoms(vaers_data)
+        # symptoms_lived = calculate_symptoms_lived(vaers_data)
+        # symptoms_died = calculate_symptoms_died(vaers_data)
         results[year] = {
             "totals": totals,
             "deaths": deaths,
-            "symptoms": symptoms,
-            "symptoms_lived": symptoms_lived,
-            "symptoms_died": symptoms_died,
+            "death_rate": death_rate,
+            # "symptoms": symptoms,
+            # "symptoms_lived": symptoms_lived,
+            # "symptoms_died": symptoms_died,
         }
 
     return results
@@ -91,7 +93,9 @@ def calculate_totals(vaers_data):
     for d in vaers_data:
         results["total"] += 1
         results["vax_type"][d.vax_type] += 1
-        results["vax_id"][d.vax_id] += 1
+
+        if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+            results["vax_id"][d.vax_id] += 1
 
     return sort_results(results)
 
@@ -106,9 +110,15 @@ def calculate_deaths(vaers_data):
 
         results["total"] += 1
         results["vax_type"][d.vax_type] += 1
-        results["vax_id"][d.vax_id] += 1
+
+        if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+            results["vax_id"][d.vax_id] += 1
 
     return sort_results(results)
+
+
+def calculate_death_rate(totals, deaths):
+    print("Calculating death rate")
 
 
 def calculate_symptoms(vaers_data):
@@ -124,7 +134,9 @@ def calculate_symptoms(vaers_data):
 
         for s in d.symptoms:
             results["vax_type"][d.vax_type][s] += 1
-            results["vax_id"][d.vax_id][s] += 1
+
+            if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+                results["vax_id"][d.vax_id][s] += 1
 
     return sort_results_symptoms(results)
 
@@ -145,7 +157,9 @@ def calculate_symptoms_lived(vaers_data):
 
         for s in d.symptoms:
             results["vax_type"][d.vax_type][s] += 1
-            results["vax_id"][d.vax_id][s] += 1
+
+            if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+                results["vax_id"][d.vax_id][s] += 1
 
     return sort_results_symptoms(results)
 
@@ -166,7 +180,9 @@ def calculate_symptoms_died(vaers_data):
 
         for s in d.symptoms:
             results["vax_type"][d.vax_type][s] += 1
-            results["vax_id"][d.vax_id][s] += 1
+
+            if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
+                results["vax_id"][d.vax_id][s] += 1
 
     return sort_results_symptoms(results)
 
