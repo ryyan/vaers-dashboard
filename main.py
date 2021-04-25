@@ -28,8 +28,9 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
 
 def main():
+    results = load()
     with open("results.json", "w") as outfile:
-        outfile.write(json.dumps(load(), indent=2))
+        outfile.write(json.dumps(results, indent=2))
 
     server = ThreadingHTTPServer((host, port), RequestHandler)
 
