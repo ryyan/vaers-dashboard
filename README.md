@@ -52,3 +52,5 @@ python app.py
 ```
 
 3. View [results](results/ALL.md)
+
+**NOTE**: "Total Vaccinations" means total vaccinations with adverse reactions reported to VAERS.
