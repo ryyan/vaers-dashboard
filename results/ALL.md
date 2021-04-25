@@ -1,5 +1,5 @@
 Totals By Year
-Year | Total | Deaths | Deaths % | Symptoms | Symptoms %
+Year | Vaccinations | Deaths | Deaths % | Symptoms | Symptoms %
 --- | --- | --- | --- | --- | ---
 1990 | 2787 | 135 | 4.84% | 7961 | 286%
 1991 | 16657 | 357 | 2.14% | 49550 | 297%
