@@ -13,17 +13,9 @@ class VaersData:
         self.sex = row["SEX"]
         self.died = row["DIED"]
         self.date_died = row["DATEDIED"]
-        # self.recovered = row["RECOVD"]
         self.vax_date = row["VAX_DATE"]
         self.onset_date = row["ONSET_DATE"]
-        # self.symptom_text = row["SYMPTOM_TEXT"]
-        # self.lab_data = row["LAB_DATA"]
         self.other_meds = row["OTHER_MEDS"]
-        # self.current_ill = row["CUR_ILL"]
-        # self.history = row["HISTORY"]
-        # self.prior_vax = row["PRIOR_VAX"]
-        # self.birth_defect = row["BIRTH_DEFECT"]
-        # self.allergies = row["ALLERGIES"]
 
         self.vax_type = None
         self.vax_manufacturer = None
