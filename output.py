@@ -44,7 +44,7 @@ def write_all(yearly_totals, yearly_deaths, yearly_symptoms):
     result = f"Totals By Year\n"
 
     result += f"Year | Total | Deaths | Deaths % | Symptoms | Symptoms %\n"
-    result += "--- | --- | --- | ---\n"
+    result += "--- | --- | --- | --- | --- | ---\n"
     for year, total in yearly_totals.items():
         deaths = yearly_deaths[year]
         symptoms = yearly_symptoms[year]
