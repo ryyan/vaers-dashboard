@@ -29,7 +29,7 @@ class VaersData:
         self.vax_type = None
         self.vax_manufacturer = None
         self.vax_dose_series = None
-        self.vax_string = None
+        self.vax_id = None
 
         self.symptoms = []
 
@@ -64,20 +64,24 @@ class SymptomData:
 
 
 def load():
-    vaers_data = parse_data_files()
-    totals = calculate_totals(vaers_data)
-    deaths = calculate_deaths(vaers_data)
-    symptoms = calculate_symptoms(vaers_data)
-    symptoms_lived = calculate_symptoms_lived(vaers_data)
-    symptoms_died = calculate_symptoms_died(vaers_data)
+    vaers_data_by_year = parse_data_files()
+    results = {}
 
-    return {
-        "totals": totals,
-        "deaths": deaths,
-        "symptoms": symptoms,
-        "symptoms_lived": symptoms_lived,
-        "symptoms_died": symptoms_died,
-    }
+    for year, vaers_data in vaers_data_by_year.items():
+        totals = calculate_totals(vaers_data)
+        deaths = calculate_deaths(vaers_data)
+        symptoms = calculate_symptoms(vaers_data)
+        symptoms_lived = calculate_symptoms_lived(vaers_data)
+        symptoms_died = calculate_symptoms_died(vaers_data)
+        results[year] = {
+            "totals": totals,
+            "deaths": deaths,
+            "symptoms": symptoms,
+            "symptoms_lived": symptoms_lived,
+            "symptoms_died": symptoms_died,
+        }
+
+    return results
 
 
 def calculate_totals(vaers_data):
@@ -87,9 +91,9 @@ def calculate_totals(vaers_data):
     for d in vaers_data:
         results["total"] += 1
         results["vax_type"][d.vax_type] += 1
-        results["vax_string"][d.vax_string] += 1
+        results["vax_id"][d.vax_id] += 1
 
-    return results
+    return sort_results(results)
 
 
 def calculate_deaths(vaers_data):
@@ -102,9 +106,9 @@ def calculate_deaths(vaers_data):
 
         results["total"] += 1
         results["vax_type"][d.vax_type] += 1
-        results["vax_string"][d.vax_string] += 1
+        results["vax_id"][d.vax_id] += 1
 
-    return results
+    return sort_results(results)
 
 
 def calculate_symptoms(vaers_data):
@@ -115,14 +119,14 @@ def calculate_symptoms(vaers_data):
         if d.vax_type not in results["vax_type"]:
             results["vax_type"][d.vax_type] = collections.defaultdict(int)
 
-        if d.vax_string not in results["vax_string"]:
-            results["vax_string"][d.vax_string] = collections.defaultdict(int)
+        if d.vax_id not in results["vax_id"]:
+            results["vax_id"][d.vax_id] = collections.defaultdict(int)
 
         for s in d.symptoms:
             results["vax_type"][d.vax_type][s] += 1
-            results["vax_string"][d.vax_string][s] += 1
+            results["vax_id"][d.vax_id][s] += 1
 
-    return results
+    return sort_results_symptoms(results)
 
 
 def calculate_symptoms_lived(vaers_data):
@@ -136,14 +140,14 @@ def calculate_symptoms_lived(vaers_data):
         if d.vax_type not in results["vax_type"]:
             results["vax_type"][d.vax_type] = collections.defaultdict(int)
 
-        if d.vax_string not in results["vax_string"]:
-            results["vax_string"][d.vax_string] = collections.defaultdict(int)
+        if d.vax_id not in results["vax_id"]:
+            results["vax_id"][d.vax_id] = collections.defaultdict(int)
 
         for s in d.symptoms:
             results["vax_type"][d.vax_type][s] += 1
-            results["vax_string"][d.vax_string][s] += 1
+            results["vax_id"][d.vax_id][s] += 1
 
-    return results
+    return sort_results_symptoms(results)
 
 
 def calculate_symptoms_died(vaers_data):
@@ -157,46 +161,77 @@ def calculate_symptoms_died(vaers_data):
         if d.vax_type not in results["vax_type"]:
             results["vax_type"][d.vax_type] = collections.defaultdict(int)
 
-        if d.vax_string not in results["vax_string"]:
-            results["vax_string"][d.vax_string] = collections.defaultdict(int)
+        if d.vax_id not in results["vax_id"]:
+            results["vax_id"][d.vax_id] = collections.defaultdict(int)
 
         for s in d.symptoms:
             results["vax_type"][d.vax_type][s] += 1
-            results["vax_string"][d.vax_string][s] += 1
+            results["vax_id"][d.vax_id][s] += 1
 
-    return results
+    return sort_results_symptoms(results)
 
 
 def new_results():
     results = collections.defaultdict(int)
     results["vax_type"] = collections.defaultdict(int)
-    results["vax_string"] = collections.defaultdict(int)
+    results["vax_id"] = collections.defaultdict(int)
     return results
+
+
+def sort_results(results):
+    results["vax_type"] = sort_by_val(results["vax_type"])
+    results["vax_id"] = sort_by_val(results["vax_id"])
+    return results
+
+
+def sort_results_symptoms(results):
+    for key, val in results["vax_type"].items():
+        results["vax_type"][key] = sort_by_val(val)
+
+    for key, val in results["vax_id"].items():
+        results["vax_id"][key] = sort_by_val(val)
+
+    return results
+
+
+def sort_by_val(x):
+    return dict(sorted(x.items(), key=lambda item: item[1], reverse=True))
 
 
 def parse_data_files():
     print("Parsing data files")
     data_folder = "data"
+    parsed_data = {}
 
     for entry in os.scandir(data_folder):
         if not entry.is_file() or not entry.name.endswith(".csv"):
             continue
 
+        # Ex: 2020VAERSDATA.csv
+        year = int(entry.name[:4])
+
+        if year not in parsed_data:
+            parsed_data[year] = {}
+
         if entry.name.endswith("DATA.csv"):
-            vaers_data = parse_data_file(entry.path, VaersData)
+            parsed_data[year]["vaers_data"] = parse_data_file(entry.path, VaersData)
 
         if entry.name.endswith("VAX.csv"):
-            vax_data = parse_data_file(entry.path, VaxData)
+            parsed_data[year]["vax_data"] = parse_data_file(entry.path, VaxData)
 
         if entry.name.endswith("SYMPTOMS.csv"):
-            symptom_data = parse_data_file(entry.path, SymptomData)
+            parsed_data[year]["symptom_data"] = parse_data_file(entry.path, SymptomData)
 
     print("Combining data")
-    # Convert vaers data to map to make it easier to combine all data models
-    vaers_map = map_vaers_data(vaers_data)
-    combine_symptom(vaers_map, symptom_data)
-    # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
-    return combine_vax(vaers_map, vax_data)
+    results = {}
+    for year, val in parsed_data.items():
+        # Convert vaers data to map to make it easier to combine all data models
+        vaers_map = map_vaers_data(val["vaers_data"])
+        combine_symptom(vaers_map, val["symptom_data"])
+        # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
+        results[year] = combine_vax(vaers_map, val["vax_data"])
+
+    return results
 
 
 def parse_data_file(file_path, data_class):
@@ -229,7 +264,7 @@ def combine_vax(vaers_map, data):
         result.vax_type = d.vax_type
         result.vax_manufacturer = d.vax_manufacturer
         result.vax_dose_series = d.vax_dose_series
-        result.vax_string = f"{d.vax_type}_{d.vax_manufacturer}"
+        result.vax_id = f"{d.vax_type}-{d.vax_manufacturer}"
         results.append(result)
 
     return results
