@@ -1,4 +1,5 @@
 import collections
+import json
 
 
 def calculate_data(vaers_data_by_year):
@@ -13,7 +14,7 @@ def calculate_data(vaers_data_by_year):
             "symptom_totals": calculate_symptom_totals(vaers_data),
         }
 
-    return results
+    return results, json.dumps(results, indent=2)
 
 
 def calculate_totals(vaers_data):

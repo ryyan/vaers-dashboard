@@ -1,5 +1,3 @@
-import json
-
 from parse import parse_data_files
 from calculate import calculate_data
 
@@ -9,9 +7,9 @@ def main():
     with open("results/vaers_data.json", "w") as outfile:
         outfile.write(vaers_data_json)
 
-    results = calculate_data(vaers_data_by_year)
+    results, results_json = calculate_data(vaers_data_by_year)
     with open("results/results.json", "w") as outfile:
-        outfile.write(json.dumps(results, indent=2))
+        outfile.write(results_json)
 
 
 if __name__ == "__main__":
