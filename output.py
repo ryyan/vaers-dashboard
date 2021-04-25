@@ -66,7 +66,7 @@ def write_table(data, header, value_column):
 
 
 def write_all(yearly_totals, yearly_deaths, yearly_symptoms):
-    result = f"Totals By Year\n"
+    result = f"# Totals By Year\n"
 
     result += f"Year | Vaccinations | Deaths | Deaths % | Symptoms | Symptoms %\n"
     result += "--- | --- | --- | --- | --- | ---\n"
