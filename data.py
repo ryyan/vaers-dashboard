@@ -70,14 +70,12 @@ def load():
     for year, vaers_data in vaers_data_by_year.items():
         totals = calculate_totals(vaers_data)
         deaths = calculate_deaths(vaers_data)
-        death_rate = calculate_death_rate(totals, deaths)
         # symptoms = calculate_symptoms(vaers_data)
         # symptoms_lived = calculate_symptoms_lived(vaers_data)
         # symptoms_died = calculate_symptoms_died(vaers_data)
         results[year] = {
             "totals": totals,
             "deaths": deaths,
-            "death_rate": death_rate,
             # "symptoms": symptoms,
             # "symptoms_lived": symptoms_lived,
             # "symptoms_died": symptoms_died,
@@ -115,21 +113,6 @@ def calculate_deaths(vaers_data):
             results["vax_id"][d.vax_id] += 1
 
     return sort_results(results)
-
-
-def calculate_death_rate(totals, deaths):
-    print("Calculating death rate")
-    results = new_results()
-
-    for key, val in deaths["vax_type"].items():
-        rate = val / totals["vax_type"][key]
-        results["vax_type"][key] = "{:.2%}".format(rate)
-
-    for key, val in deaths["vax_id"].items():
-        rate = val / totals["vax_id"][key]
-        results["vax_id"][key] = "{:.2%}".format(rate)
-
-    return results
 
 
 def calculate_symptoms(vaers_data):
