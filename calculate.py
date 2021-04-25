@@ -31,12 +31,18 @@ def calculate_totals(vaers_data):
 def calculate_deaths(vaers_data):
     print("Calculating deaths")
     results = new_results()
+    already_seen = set()
 
     for d in vaers_data:
         if not d.died == "Y":
             continue
 
-        results["total"] += 1
+        # Ensure we do not count deaths twice
+        # If someone got 2 different vaccines and died, count it as 1 death
+        if d.vaers_id not in already_seen:
+            results["total"] += 1
+            already_seen.add(d.vaers_id)
+
         results["vax_type"][d.vax_type] += 1
 
         if d.vax_manufacturer != "UNKNOWN MANUFACTURER":
