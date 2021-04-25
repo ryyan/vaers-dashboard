@@ -63,17 +63,21 @@ class SymptomData:
             self.symptoms.append(row["SYMPTOM5"])
 
 
-class DataLoader:
+def load():
+    vaers_data = parse_data_files()
+    totals = calculate_totals(vaers_data)
+    deaths = calculate_deaths(vaers_data)
+    symptoms = calculate_symptoms(vaers_data)
+    symptoms_lived = calculate_symptoms_lived(vaers_data)
+    symptoms_died = calculate_symptoms_died(vaers_data)
 
-    @staticmethod
-    def load():
-        vaers_data = parse_data_files()
-        totals = calculate_totals(vaers_data)
-        deaths = calculate_deaths(vaers_data)
-        return {
-            "totals": totals,
-            "deaths": deaths,
-        }
+    return {
+        "totals": totals,
+        "deaths": deaths,
+        "symptoms": symptoms,
+        "symptoms_lived": symptoms_lived,
+        "symptoms_died": symptoms_died,
+    }
 
 
 def calculate_totals(vaers_data):
@@ -97,10 +101,78 @@ def calculate_deaths(vaers_data):
     results["vax_string"] = collections.defaultdict(int)
 
     for d in vaers_data:
+        if not d.died == "Y":
+            continue
+
+        results["total"] += 1
+        results["vax_type"][d.vax_type] += 1
+        results["vax_string"][d.vax_string] += 1
+
+    return results
+
+
+def calculate_symptoms(vaers_data):
+    print("Calculating symptoms")
+    results = {}
+    results["vax_type"] = {}
+    results["vax_string"] = {}
+
+    for d in vaers_data:
+        if d.vax_type not in results["vax_type"]:
+            results["vax_type"][d.vax_type] = collections.defaultdict(int)
+
+        if d.vax_string not in results["vax_string"]:
+            results["vax_string"][d.vax_string] = collections.defaultdict(int)
+
+        for s in d.symptoms:
+            results["vax_type"][d.vax_type][s] += 1
+            results["vax_string"][d.vax_string][s] += 1
+
+    return results
+
+
+def calculate_symptoms_lived(vaers_data):
+    print("Calculating symptoms of deaths")
+    results = {}
+    results["vax_type"] = {}
+    results["vax_string"] = {}
+
+    for d in vaers_data:
         if d.died == "Y":
-            results["total"] += 1
-            results["vax_type"][d.vax_type] += 1
-            results["vax_string"][d.vax_string] += 1
+            continue
+
+        if d.vax_type not in results["vax_type"]:
+            results["vax_type"][d.vax_type] = collections.defaultdict(int)
+
+        if d.vax_string not in results["vax_string"]:
+            results["vax_string"][d.vax_string] = collections.defaultdict(int)
+
+        for s in d.symptoms:
+            results["vax_type"][d.vax_type][s] += 1
+            results["vax_string"][d.vax_string][s] += 1
+
+    return results
+
+
+def calculate_symptoms_died(vaers_data):
+    print("Calculating symptoms of deaths")
+    results = {}
+    results["vax_type"] = {}
+    results["vax_string"] = {}
+
+    for d in vaers_data:
+        if not d.died == "Y":
+            continue
+
+        if d.vax_type not in results["vax_type"]:
+            results["vax_type"][d.vax_type] = collections.defaultdict(int)
+
+        if d.vax_string not in results["vax_string"]:
+            results["vax_string"][d.vax_string] = collections.defaultdict(int)
+
+        for s in d.symptoms:
+            results["vax_type"][d.vax_type][s] += 1
+            results["vax_string"][d.vax_string][s] += 1
 
     return results
 
@@ -160,7 +232,7 @@ def combine_vax(vaers_map, data):
         result.vax_type = d.vax_type
         result.vax_manufacturer = d.vax_manufacturer
         result.vax_dose_series = d.vax_dose_series
-        result.vax_string = f"{d.vax_type};{d.vax_manufacturer}"
+        result.vax_string = f"{d.vax_type}_{d.vax_manufacturer}"
         results.append(result)
 
     return results
