@@ -16,11 +16,11 @@ class VaersData:
         self.onset_date = row["ONSET_DATE"]
         self.other_meds = row["OTHER_MEDS"]
 
+        # These fields will be populated after object creation
         self.vax_type = None
         self.vax_manufacturer = None
         self.vax_dose_series = None
         self.vax_id = None
-
         self.symptoms = []
 
     def append_symptom_data(self, symptom_data):
@@ -84,6 +84,7 @@ def parse_data_files():
         vaers_map = map_vaers_data(val["vaers_data"])
         combine_symptom(vaers_map, val["symptom_data"])
         # Flatten data when combining with vax data (so now there will be repeating vaers IDs)
+        # Multiple VAERS data objects can have the same VAERS ID but will have different vax data
         results[year] = combine_vax(vaers_map, val["vax_data"])
 
     return results
