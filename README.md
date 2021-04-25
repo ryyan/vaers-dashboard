@@ -11,7 +11,5 @@ Dashboard for VAERS data
 2. Run
 
 ```sh
-cd api
-npm i
-npm start
+python app.py
 ```
