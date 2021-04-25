@@ -68,19 +68,13 @@ def load():
     results = {}
 
     for year, vaers_data in vaers_data_by_year.items():
-        totals = calculate_totals(vaers_data)
-        deaths = calculate_deaths(vaers_data)
-        # symptoms = calculate_symptoms(vaers_data)
-        # symptoms_lived = calculate_symptoms_lived(vaers_data)
-        # symptoms_died = calculate_symptoms_died(vaers_data)
-        symptom_totals = calculate_symptom_totals(vaers_data)
         results[year] = {
-            "totals": totals,
-            "deaths": deaths,
-            # "symptoms": symptoms,
-            # "symptoms_lived": symptoms_lived,
-            # "symptoms_died": symptoms_died,
-            "symptom_totals": symptom_totals,
+            "totals": calculate_totals(vaers_data),
+            "deaths": calculate_deaths(vaers_data),
+            # "symptoms": calculate_symptoms(vaers_data),
+            # "symptoms_lived": calculate_symptoms_lived(vaers_data),
+            # "symptoms_died": calculate_symptoms_died(vaers_data),
+            "symptom_totals": calculate_symptom_totals(vaers_data),
         }
 
     return results
