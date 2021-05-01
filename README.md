@@ -7,6 +7,7 @@ Dashboard for VAERS data
 1. Download and unzip the VAERS data zip file(s) into the data folder
 
     - https://vaers.hhs.gov/data.html
+    - The example below shows all the years, but only one (1) year is required
 
 ```sh
 >ls -sh data/
