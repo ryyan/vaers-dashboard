@@ -1,6 +1,6 @@
-# vaers-dashboard
+# vaers-report
 
-Dashboard for VAERS data 
+Parse, analyze, and generate reports for Vaccine Adverse Event Reporting System (VAERS) data
 
 ## Getting started
 
@@ -54,4 +54,4 @@ python app.py
 
 3. View [results](results/ALL.md)
 
-**NOTE**: "Total Vaccinations" means total vaccinations with adverse reactions reported to VAERS.
+**NOTE: "Total Vaccinations" means total vaccinations with adverse reactions reported to VAERS.**
