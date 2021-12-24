@@ -70,7 +70,7 @@ def write_all(yearly_totals, yearly_deaths, yearly_symptoms):
 
     result += f"Year | Vaccinations | Deaths | Deaths % | Symptoms | Symptoms %\n"
     result += "--- | --- | --- | --- | --- | ---\n"
-    for year, total in yearly_totals.items():
+    for year, total in sorted(yearly_totals.items()):
         deaths = yearly_deaths[year]
         symptoms = yearly_symptoms[year]
         deaths_ratio = "{:.2%}".format(deaths / total)
